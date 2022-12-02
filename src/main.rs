@@ -1,25 +1,59 @@
 use std::fs;
 
+enum HandSign {
+    Rock,
+    Paper,
+    Scissor,
+}
+
+// This looks aweful :D
+fn score(elf : &Option<HandSign>, me : &Option<HandSign>) -> Option<i32> {
+    match elf {
+        Some(HandSign::Rock) => match me {
+            Some(HandSign::Rock) => Some(3 + 1), // draw
+            Some(HandSign::Paper) => Some(6 + 2), // win
+            Some(HandSign::Scissor) => Some(0 + 3), // lose
+            None => None,
+        },
+        Some(HandSign::Paper) => match me {
+            Some(HandSign::Rock) => Some(0 + 1), // lose
+            Some(HandSign::Paper) => Some(3 + 2), // draw
+            Some(HandSign::Scissor) => Some(6 + 3), // win
+            None => None,
+        },
+        Some(HandSign::Scissor) => match me {
+            Some(HandSign::Rock) => Some(6 + 1), // win
+            Some(HandSign::Paper) => Some(0 + 2), // lose
+            Some(HandSign::Scissor) => Some(3 + 3), // draw
+            None => None,
+        },
+        None => None,
+    }
+}
+
 fn main() {
-    let content = fs::read_to_string("input/day1a.txt")
+    let content = fs::read_to_string("input/day2a.txt")
         .expect("Unable to read input file.");
-    let mut elf_list = Vec::<i32>::new();
-    let mut elf_calories : i32 = 0;
-    for line in content.split("\n") {
-        if let Some(calories) = line.parse::<i32>().ok() {
-            elf_calories += calories;
-        } else {
-            //println!("elf calories: {}", elf_calories);
-            elf_list.push(elf_calories);
-            elf_calories = 0;
-        }
-    }
-    elf_list.sort_by(|a, b| b.cmp(a));
-    let mut sum : i32 = 0;
-    for i in 0..3 {
-        let calories = elf_list[i];
-        println!("elf: {}", calories);
-        sum += calories;
-    }
-    println!("top three elves carry: {}", sum);
+
+    let res : Option<i32> = content
+        .lines()
+        .map(|line| -> Option<i32> {
+            let round : Vec<Option<HandSign>>= line.split_whitespace()
+                .map(|sign| -> Option<HandSign> {
+                    match sign {
+                        "A" => Some(HandSign::Rock), // rock
+                        "B" => Some(HandSign::Paper), // paper
+                        "C" => Some(HandSign::Scissor), // scissor
+
+                        "X" => Some(HandSign::Rock), // rock
+                        "Y" => Some(HandSign::Paper), // paper
+                        "Z" => Some(HandSign::Scissor), // scissor
+
+                        _ => None,
+                    }
+                }).collect();
+            return score(&round[0], &round[1]);
+        })
+        .sum();
+    println!("{:?}", res);
 }
