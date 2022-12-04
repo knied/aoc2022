@@ -8,8 +8,9 @@ fn merge<T: std::cmp::Ord>(r0: Range<T>, r1: Range<T>) -> Range<T> {
     }
 }
 
-fn contained(r0: &Range<u32>, r1: &Range<u32>) -> bool {
-    r0.contains(&r1.start) && r0.contains(&(r1.end - 1))
+fn overlap(r0: &Range<u32>, r1: &Range<u32>) -> bool {
+    (r0.start as i32 - r1.end as i32).lt(&0)
+        && (r0.end as i32 - r1.start as i32).gt(&0)
 }
 
 fn main() {
@@ -32,8 +33,7 @@ fn main() {
                         .expect("must be valid ranges")
                 })
                 .collect::<Vec<_>>();
-            contained(&ranges[0], &ranges[1])
-                || contained(&ranges[1], &ranges[0])
+            overlap(&ranges[0], &ranges[1])
         })
         .fold(
             0_u32,
