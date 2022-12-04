@@ -9,8 +9,8 @@ fn merge<T: std::cmp::Ord>(r0: Range<T>, r1: Range<T>) -> Range<T> {
 }
 
 fn overlap(r0: &Range<u32>, r1: &Range<u32>) -> bool {
-    (r0.start as i32 - r1.end as i32).lt(&0)
-        && (r0.end as i32 - r1.start as i32).gt(&0)
+    (r0.start as i32 - r1.end as i32) < 0
+        && (r0.end as i32 - r1.start as i32) > 0
 }
 
 fn main() {
@@ -35,15 +35,7 @@ fn main() {
                 .collect::<Vec<_>>();
             overlap(&ranges[0], &ranges[1])
         })
-        .fold(
-            0_u32,
-            |count, fully_contained| {
-                if fully_contained {
-                    count + 1
-                } else {
-                    count
-                }
-            },
-        );
+        .filter(|b| *b)
+        .count();
     println!("{}", count);
 }
