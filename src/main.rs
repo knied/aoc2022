@@ -82,12 +82,17 @@ fn main() {
                 .collect::<Vec<_>>()
         })
         .all(|instr| {
+            let count = instr[0];
             let from = instr[1] - 1;
             let to = instr[2] - 1;
-            for _ in 0..instr[0] {
+            let mut tmp = Vec::<char>::new();
+            for _ in 0..count {
                 let item =
                     storage.take(from).expect("stack should not be empty");
-                storage.put(to, item);
+                tmp.push(item);
+            }
+            for item in tmp.iter().rev() {
+                storage.put(to, *item);
             }
             true
         });
