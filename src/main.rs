@@ -107,25 +107,22 @@ impl DirTree {
         }
         println!();*/
     }
-    pub fn total_size(
+    pub fn total_sizes(
         &self,
         dir: &Dir,
         prefix: String,
-        result: &mut usize,
+        dirs: &mut Vec::<(String, usize)>,
     ) -> usize {
         let mut size = dir.self_size;
         dir.subdirs.iter().for_each(|(_, idx)| {
             let sdir = &self.dirs[*idx];
-            size += self.total_size(
+            size += self.total_sizes(
                 sdir,
                 format!("{}/{}", prefix, sdir.name),
-                result,
+                dirs,
             );
         });
-        if size <= 100000 {
-            println!("{}/ : {}", prefix, size);
-            *result += size;
-        }
+        dirs.push((prefix,size));
         size
     }
 }
@@ -151,7 +148,22 @@ fn main() {
             _ => (),
         }
     }
-    let mut result: usize = 0;
-    tree.total_size(tree.root(), "".to_string(), &mut result);
-    println!("result: {}", result);
+    let mut dirs = Vec::<(String, usize)>::new();
+    let used = tree.total_sizes(tree.root(), "".to_string(), &mut dirs);
+    const TOTAL : usize = 70000000;
+    const NEEDED : usize = 30000000;
+    let free = TOTAL - used;
+    let remove = NEEDED - free;
+    println!("used: {}", used);
+    println!("remove: {}", remove);
+    let mut candidates = dirs.iter()
+        .filter(|(_, size)| {
+            size >= &remove
+        })
+        .collect::<Vec<_>>();
+    candidates.sort_by(|(_, a), (_, b)| {
+        a.cmp(b)
+    });
+    let (name, size) = candidates.first().expect("there should be one");
+    println!("{} : {}", name, size);
 }
