@@ -1,37 +1,39 @@
 use std::fs;
 
-fn visible1(i: usize, heights: &Vec<i32>) -> bool {
+fn score1(i: usize, heights: &Vec<i32>) -> (bool, usize) {
     let height = heights[i];
-    let left = heights
+    let left_oversee = heights
         .iter()
         .take(i)
-        .fold(-1, |max, h| std::cmp::max(max, *h));
-    if left < height {
-        return true;
-    }
-    let right = heights
+        .rev()
+        .take_while(|h| **h < height)
+        .count();
+    let left = if left_oversee < i {
+        (false, left_oversee + 1) // +1 for the tree that is blocking our view
+    } else {
+        (true, left_oversee)
+    };
+
+    let right_oversee = heights
         .iter()
         .skip(i + 1)
-        .take(heights.len() - i - 1)
-        .fold(-1, |max, h| std::cmp::max(max, *h));
-    if right < height {
-        return true;
-    }
-    false
+        .take_while(|h| **h < height)
+        .count();
+    let right = if right_oversee < (heights.len() - i - 1) {
+        (false, right_oversee + 1) // +1 for the tree that is blocking our view
+    } else {
+        (true, right_oversee)
+    };
+    (left.0 || right.0, left.1 * right.1)
 }
 
 type Heights = Vec<Vec<i32>>;
-fn visible2(r: usize, c: usize, heights: &Heights) -> bool {
-    // horizontal
+fn score2(r: usize, c: usize, heights: &Heights) -> (bool, usize) {
     let row = &heights[r];
-    if visible1(c, row) {
-        return true;
-    }
+    let h = score1(c, row);
     let col = heights.iter().map(|row| row[c]).collect::<Vec<_>>();
-    if visible1(r, &col) {
-        return true;
-    }
-    false
+    let v = score1(r, &col);
+    (h.0 || v.0, h.1 * v.1)
 }
 
 fn main() {
@@ -48,9 +50,12 @@ fn main() {
         .collect::<Vec<_>>();
 
     let mut count: usize = 0;
+    let mut best_score: usize = 0;
     for r in 0..heights.len() {
         for c in 0..heights[r].len() {
-            if visible2(r, c, &heights) {
+            let (visible, score) = score2(r, c, &heights);
+            best_score = std::cmp::max(best_score, score);
+            if visible {
                 count += 1;
                 print!("{}", heights[r][c]);
             } else {
@@ -60,4 +65,5 @@ fn main() {
         println!();
     }
     println!("{} of {}", count, heights.len() * heights[0].len());
+    println!("best score: {}", best_score);
 }
