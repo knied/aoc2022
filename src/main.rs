@@ -24,29 +24,28 @@ fn main() {
 
     let mut x : i32 = 1;
     let mut cycle : i32 = 0;
-    let mut next_sample : i32 = 20;
-    let mut result : i32 = 0;
     instr
         .iter().for_each(|i| {
             let mut next_x = x;
-            match i {
-                Instr::Noop => {
-                    cycle += 1;
-                    println!("{}: noop (x = {}))", cycle, x);
-                },
+            let cycles = match i {
+                Instr::Noop => 1,
                 Instr::Addx(v) => {
-                    cycle += 2;
                     next_x += v;
-                    println!("{}: addx {} (x = {} -> {}))", cycle, v, x, next_x);
+                    2
                 }
             };
-            
-            while cycle >= next_sample {
-                result += next_sample * x;
-                println!("{}: sample {} (x = {}))", cycle, next_sample, x);
-                next_sample += 40;
+            for _ in 0..cycles {
+                if x - 1 <= cycle && x + 1 >= cycle {
+                    print!("#");
+                } else {
+                    print!(".");
+                }
+                cycle += 1;
+                if cycle >= 40 {
+                    println!();
+                    cycle = 0;
+                }
             }
             x = next_x;
         });
-    println!("result = {}", result);
 }
